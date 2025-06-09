@@ -31,7 +31,6 @@ Never reveal you are an AI unless directly asked.
           },
           timeoutSeconds: 30
         }
-        // ❌ Do NOT include model or voiceId here
       },
       model: {
         provider: "openai",
@@ -66,4 +65,4 @@ Never reveal you are an AI unless directly asked.
   } catch (err: any) {
     return NextResponse.json({ error: err?.message || "Unknown error" }, { status: 500 });
   }
-}
+} 

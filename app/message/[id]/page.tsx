@@ -34,7 +34,7 @@ export default function MessageDetailPage() {
   }, [id]);
 
   return (
-    <div className="max-w-xl mx-auto p-8">
+    <div className="max-w-xl mx-auto p-8 max-h-screen overflow-y-auto">
       <h1 className="text-2xl font-bold mb-4">Message for {recipientName}</h1>
       <div className="mb-6">
         <div className="flex gap-2 border-b mb-4">
