@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import Lottie from "lottie-react";
 import emptyBoxJson from "@/public/empty-box.json";
+import Link from "next/link";
 
 const dbId = process.env.NEXT_PUBLIC_USER_DATABASE_ID!;
 const collectionId = process.env.NEXT_PUBLIC_DIRECTORY_COLLECTION_ID!;
@@ -107,78 +108,80 @@ export default function MessagePage() {
       </div>
       <div className="w-full space-y-3">
         {recipients.map((r) => (
-          <div key={r.$id} className="bg-white border rounded p-4 flex flex-col relative">
-            {/* Top right: Edit / Delete */}
-            <div className="absolute top-2 right-2 flex gap-2 z-10">
-              <Button
-                size="icon"
-                variant="ghost"
-                className="hover:bg-blue-100 p-1 rounded"
-                onClick={() => setEditRecipient(r)}
-              >
-                <FaEdit className="text-blue-500" />
-              </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="hover:bg-blue-100 p-1 rounded"
-                    onClick={() => setDeleteRecipient(r)}
-                  >
-                    <FaTrash className="text-blue-500" />
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete Recipient</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone. Are you sure you want to delete this recipient?
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={async () => {
-                        try {
-                          await databases.deleteDocument(dbId, collectionId, r.$id);
-                          setRecipients(recipients.filter((rec) => rec.$id !== r.$id));
-                          setDeleteRecipient(null);
-                        } catch (e) {
-                          alert("Failed to delete recipient.");
-                        }
-                      }}
+          <Link key={r.$id} href={`/message/${r.$id}`} className="block">
+            <div className="bg-white border rounded p-4 flex flex-col relative hover:shadow-md transition cursor-pointer">
+              {/* Top right: Edit / Delete */}
+              <div className="absolute top-2 right-2 flex gap-2 z-10">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="hover:bg-blue-100 p-1 rounded"
+                  onClick={e => { e.preventDefault(); setEditRecipient(r); }}
+                >
+                  <FaEdit className="text-blue-500" />
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="hover:bg-blue-100 p-1 rounded"
+                      onClick={e => { e.preventDefault(); setDeleteRecipient(r); }}
                     >
-                      Delete
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+                      <FaTrash className="text-blue-500" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Recipient</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. Are you sure you want to delete this recipient?
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={async () => {
+                          try {
+                            await databases.deleteDocument(dbId, collectionId, r.$id);
+                            setRecipients(recipients.filter((rec) => rec.$id !== r.$id));
+                            setDeleteRecipient(null);
+                          } catch (e) {
+                            alert("Failed to delete recipient.");
+                          }
+                        }}
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+              <div><b>Name:</b> {r.recipient_name}</div>
+              <div><b>Relationship:</b> {r.recipient_relationship}</div>
+              <div><b>Email:</b> {r.recipient_email}</div>
+              <div>
+                <b>Birthday:</b>{" "}
+                {r.recipient_birthday
+                  ? new Date(r.recipient_birthday).toLocaleDateString()
+                  : <span className="text-gray-400">N/A</span>}
+              </div>
+              {/* Edit dialog */}
+              {editRecipient && editRecipient.$id === r.$id && (
+                <UpdateRecipientDialog
+                  recipient={editRecipient}
+                  open={!!editRecipient}
+                  setOpen={(open) => {
+                    if (!open) setEditRecipient(null);
+                  }}
+                  onUpdated={() => {
+                    setEditRecipient(null);
+                    fetchRecipients();
+                  }}
+                />
+              )}
             </div>
-            <div><b>Name:</b> {r.recipient_name}</div>
-            <div><b>Relationship:</b> {r.recipient_relationship}</div>
-            <div><b>Email:</b> {r.recipient_email}</div>
-            <div>
-              <b>Birthday:</b>{" "}
-              {r.recipient_birthday
-                ? new Date(r.recipient_birthday).toLocaleDateString()
-                : <span className="text-gray-400">N/A</span>}
-            </div>
-            {/* Edit dialog */}
-            {editRecipient && editRecipient.$id === r.$id && (
-              <UpdateRecipientDialog
-                recipient={editRecipient}
-                open={!!editRecipient}
-                setOpen={(open) => {
-                  if (!open) setEditRecipient(null);
-                }}
-                onUpdated={() => {
-                  setEditRecipient(null);
-                  fetchRecipients();
-                }}
-              />
-            )}
-          </div>
+          </Link>
         ))}
       </div>
     </div>
