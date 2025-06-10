@@ -50,6 +50,8 @@ export default function AddRecipientDialog({ onAdded }: { onAdded?: () => void }
     try {
       const user = await account.get();
       const userID = user.$id;
+      const sender_name = user.name || "";
+      const sender_email = user.email || "";
 
       // Appwrite expects ISO string for datetime fields
       const doc = await databases.createDocument(
@@ -62,6 +64,8 @@ export default function AddRecipientDialog({ onAdded }: { onAdded?: () => void }
           recipient_email: data.email,
           recipient_relationship: data.relationship,
           recipient_birthday: data.birthday ? data.birthday.toISOString() : null,
+          sender_name,
+          sender_email,
         }
       );
       toast("Recipient saved!", {

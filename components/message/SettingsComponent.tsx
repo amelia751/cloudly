@@ -18,11 +18,10 @@
 // Never reveal you are an AI unless directly asked.`;
 
 // export default function SettingsComponent({ id }: { id: string }) {
-//   // State for voice, assistant, recipient, prompt, etc.
 //   const [voiceId, setVoiceId] = useState<string | null>(null);
 //   const [assistant, setAssistant] = useState<any>(null);
 //   const [recipientName, setRecipientName] = useState<string>('');
-//   const [content, setContent] = useState<string>(DEFAULT_ASSISTANT_CONTENT);
+//   const [content, setContent] = useState<string>(''); // Note: empty string here
 //   const [assistantName, setAssistantName] = useState<string>('');
 //   const [firstMessage, setFirstMessage] = useState<string>('Hello! It\'s so good to hear your voice. How are you feeling today?');
 //   const [loading, setLoading] = useState(false);
@@ -30,7 +29,6 @@
 //   const [error, setError] = useState<string | null>(null);
 //   const [success, setSuccess] = useState<string | null>(null);
 
-//   // Prevent invalid queries
 //   if (!id) return <div className="text-center text-red-500 mt-8">Invalid or missing directory ID.</div>;
 
 //   // Fetch user's custom voice
@@ -84,13 +82,13 @@
 //         if (res.documents.length > 0) {
 //           const a = res.documents[0];
 //           setAssistant(a);
-//           setContent(a.content || DEFAULT_ASSISTANT_CONTENT);
+//           setContent(a.content || ''); // Just user customization part
 //           setAssistantName(a.assistantName || `Message for ${recipientName}`);
 //           setFirstMessage(a.firstMessage || 'Hello! It\'s so good to hear your voice. How are you feeling today?');
 //           setMode('edit');
 //         } else {
 //           setAssistant(null);
-//           setContent(DEFAULT_ASSISTANT_CONTENT);
+//           setContent('');
 //           setAssistantName(`Message for ${recipientName}`);
 //           setFirstMessage('Hello! It\'s so good to hear your voice. How are you feeling today?');
 //           setMode('create');
@@ -121,11 +119,14 @@
 //       setLoading(false);
 //       return;
 //     }
-//     if (!content.trim()) {
-//       setError("Prompt content is required.");
-//       setLoading(false);
-//       return;
-//     }
+
+//     // You can require user to add *something* to content if you want
+//     // For now, allow empty content (just default instructions)
+//     // if (!content.trim()) {
+//     //   setError("Prompt content is required.");
+//     //   setLoading(false);
+//     //   return;
+//     // }
 
 //     try {
 //       // Fetch latest messages & events for context
@@ -150,9 +151,10 @@
 //         message: ev.message,
 //       }));
 
-//       // Compose full system prompt
+//       // Compose full system prompt: combine default with user instructions
 //       const promptWithContext =
-//         content +
+//         DEFAULT_ASSISTANT_CONTENT +
+//         (content.trim() ? "\n\n" + content.trim() : "") +
 //         `\n\nMessages:\n` +
 //         messages.map(m =>
 //           `- "${m.message}"` + (m.context ? ` (Context: ${m.context})` : '') + (m.note ? ` (Note: ${m.note})` : '')
@@ -211,7 +213,7 @@
 //             assistantID: apiAssistant.id,
 //             orgID: apiAssistant.orgId,
 //             assistantName,
-//             content,
+//             content, // Only save user customization part to DB
 //             firstMessage,
 //           }
 //         );
@@ -225,7 +227,7 @@
 //             assistantID: apiAssistant.id,
 //             orgID: apiAssistant.orgId,
 //             assistantName,
-//             content,
+//             content, // Only save user customization part to DB
 //             firstMessage,
 //           }
 //         );
@@ -270,16 +272,16 @@
 //           </div>
 //         </div>
 //         <div>
-//           <label className="block font-medium mb-1">Prompt/Instructions<span className="text-red-500">*</span></label>
+//           <label className="block font-medium mb-1">Instructions<span className="text-red-500">*</span></label>
 //           <textarea
 //             className="w-full border px-3 py-2 rounded"
 //             rows={5}
 //             value={content}
 //             onChange={e => setContent(e.target.value)}
-//             required
+//             placeholder="Add custom instructions or memories here (optional)..."
 //           />
 //           <div className="text-xs text-gray-500 mt-1">
-//             This prompt guides how your AI companion speaks. Edit to customize the style or personality.
+//             Your AI companion will always be gentle, warm, and personal. You can add extra memories, style, or instructions here.
 //           </div>
 //         </div>
 //         <div>
@@ -321,11 +323,17 @@
 // }
 
 
+
+
 'use client';
 import { useEffect, useState } from 'react';
 import { databases, account } from '@/lib/appwrite';
 import { Query, ID } from 'appwrite';
 import { Button } from '@/components/ui/button';
+
+// Optional: Use Lottie for fun animation if you want
+import dynamic from "next/dynamic";
+const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
 const dbId = process.env.NEXT_PUBLIC_USER_DATABASE_ID!;
 const voiceCollectionId = process.env.NEXT_PUBLIC_VOICE_COLLECTION_ID!;
@@ -341,10 +349,10 @@ If the user expresses sadness, respond with empathy and caring. If asked to give
 Never reveal you are an AI unless directly asked.`;
 
 export default function SettingsComponent({ id }: { id: string }) {
-  const [voiceId, setVoiceId] = useState<string | null>(null);
+  const [voiceId, setVoiceId] = useState<string | null | undefined>(undefined);
   const [assistant, setAssistant] = useState<any>(null);
   const [recipientName, setRecipientName] = useState<string>('');
-  const [content, setContent] = useState<string>(''); // Note: empty string here
+  const [content, setContent] = useState<string>('');
   const [assistantName, setAssistantName] = useState<string>('');
   const [firstMessage, setFirstMessage] = useState<string>('Hello! It\'s so good to hear your voice. How are you feeling today?');
   const [loading, setLoading] = useState(false);
@@ -366,6 +374,8 @@ export default function SettingsComponent({ id }: { id: string }) {
         );
         if (res.documents.length > 0) {
           setVoiceId(res.documents[0].voiceId);
+        } else {
+          setVoiceId(null);
         }
       } catch {
         setVoiceId(null);
@@ -405,7 +415,7 @@ export default function SettingsComponent({ id }: { id: string }) {
         if (res.documents.length > 0) {
           const a = res.documents[0];
           setAssistant(a);
-          setContent(a.content || ''); // Just user customization part
+          setContent(a.content || '');
           setAssistantName(a.assistantName || `Message for ${recipientName}`);
           setFirstMessage(a.firstMessage || 'Hello! It\'s so good to hear your voice. How are you feeling today?');
           setMode('edit');
@@ -425,7 +435,40 @@ export default function SettingsComponent({ id }: { id: string }) {
     // eslint-disable-next-line
   }, [id, recipientName]);
 
-  // Create or update assistant
+  // Loading spinner
+  if (voiceId === undefined) {
+    return (
+      <div className="w-full flex justify-center items-center min-h-[300px]">
+        <div className="text-lg text-sky-600 font-medium">Loading...</div>
+      </div>
+    );
+  }
+
+  // If no voice is created yet, show prompt + button to /voice
+  if (!voiceId) {
+    return (
+      <div className="flex flex-col items-center justify-center max-w-lg mx-auto bg-white rounded-2xl p-6">
+        <div className="w-[200px] h-[200px] mb-4">
+          {/* Swap to a static image or illustration if you don't want Lottie */}
+          <Lottie animationData={require('@/public/voice-support.json')} loop autoplay />
+        </div>
+        <div className="text-xl font-semibold text-sky-800 mb-3 text-center">
+          Record your voice to create your AI assistant
+        </div>
+        <div className="text-gray-600 text-center mb-4">
+          You need to record your voice before you can configure messages and create an AI voice bot for your loved one.
+        </div>
+        <Button
+          className="bg-sky-500 text-white px-6 py-2 rounded-full font-medium text-base"
+          asChild
+        >
+          <a href="/voice">Go to Voice Setup</a>
+        </Button>
+      </div>
+    );
+  }
+
+  // Otherwise, show the form as before!
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -442,14 +485,6 @@ export default function SettingsComponent({ id }: { id: string }) {
       setLoading(false);
       return;
     }
-
-    // You can require user to add *something* to content if you want
-    // For now, allow empty content (just default instructions)
-    // if (!content.trim()) {
-    //   setError("Prompt content is required.");
-    //   setLoading(false);
-    //   return;
-    // }
 
     try {
       // Fetch latest messages & events for context
@@ -536,7 +571,7 @@ export default function SettingsComponent({ id }: { id: string }) {
             assistantID: apiAssistant.id,
             orgID: apiAssistant.orgId,
             assistantName,
-            content, // Only save user customization part to DB
+            content,
             firstMessage,
           }
         );
@@ -550,7 +585,7 @@ export default function SettingsComponent({ id }: { id: string }) {
             assistantID: apiAssistant.id,
             orgID: apiAssistant.orgId,
             assistantName,
-            content, // Only save user customization part to DB
+            content,
             firstMessage,
           }
         );
@@ -595,7 +630,7 @@ export default function SettingsComponent({ id }: { id: string }) {
           </div>
         </div>
         <div>
-          <label className="block font-medium mb-1">Instructions<span className="text-red-500">*</span></label>
+          <label className="block font-medium mb-1">Instructions</label>
           <textarea
             className="w-full border px-3 py-2 rounded"
             rows={5}

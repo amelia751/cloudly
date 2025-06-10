@@ -24,6 +24,9 @@ import Link from "next/link";
 
 const dbId = process.env.NEXT_PUBLIC_USER_DATABASE_ID!;
 const collectionId = process.env.NEXT_PUBLIC_DIRECTORY_COLLECTION_ID!;
+const messageCollectionId = process.env.NEXT_PUBLIC_MESSAGE_COLLECTION_ID!;
+const eventCollectionId = process.env.NEXT_PUBLIC_EVENT_COLLECTION_ID!;
+const assistantCollectionId = process.env.NEXT_PUBLIC_ASSISTANT_COLLECTION_ID!;
 
 // EditRecipientDialog is left as an exercise, or just add a stub/modal trigger for now
 const EditRecipientDialog = ({ recipient, onEdited }: { recipient: any; onEdited: () => void }) => (
@@ -61,13 +64,41 @@ export default function MessagePage() {
     // eslint-disable-next-line
   }, []);
 
-  const handleDelete = async (recipient: any) => {
-    if (!window.confirm(`Delete recipient "${recipient.recipient_name}"?`)) return;
+  const handleCascadeDelete = async (recipient: any) => {
     try {
+      // Delete all messages with this directoryID
+      const messagesRes = await databases.listDocuments(
+        dbId,
+        messageCollectionId,
+        [Query.equal("directoryID", recipient.$id)]
+      );
+      for (const msg of messagesRes.documents) {
+        await databases.deleteDocument(dbId, messageCollectionId, msg.$id);
+      }
+      // Delete all events with this directoryID
+      const eventsRes = await databases.listDocuments(
+        dbId,
+        eventCollectionId,
+        [Query.equal("directoryID", recipient.$id)]
+      );
+      for (const ev of eventsRes.documents) {
+        await databases.deleteDocument(dbId, eventCollectionId, ev.$id);
+      }
+      // Delete all assistants with this directoryID
+      const assistantsRes = await databases.listDocuments(
+        dbId,
+        assistantCollectionId,
+        [Query.equal("directoryID", recipient.$id)]
+      );
+      for (const a of assistantsRes.documents) {
+        await databases.deleteDocument(dbId, assistantCollectionId, a.$id);
+      }
+      // Delete the directory document itself
       await databases.deleteDocument(dbId, collectionId, recipient.$id);
       setRecipients(recipients.filter((r) => r.$id !== recipient.$id));
+      setDeleteRecipient(null);
     } catch (e) {
-      alert("Failed to delete recipient.");
+      alert("Failed to delete recipient and related data.");
     }
   };
 
@@ -79,7 +110,7 @@ export default function MessagePage() {
     );
   }
   if (recipients.length === 0) {
-    return (
+  return (
       <div className="max-w-xl mx-auto p-1 flex flex-col items-center justify-center h-full">
         <div className="w-64 h-64 mb-6">
           <Lottie
@@ -92,10 +123,10 @@ export default function MessagePage() {
           You currently have no connection.<br />
           <span className="text-gray-500 text-base font-normal">
             Add a recipient to start crafting messages.
-          </span>
-        </div>
+                  </span>
+                </div>
         <AddRecipientDialog onAdded={fetchRecipients} />
-      </div>
+                </div>
     );
   }
   // --- If there ARE recipients ---
@@ -120,42 +151,14 @@ export default function MessagePage() {
                 >
                   <FaEdit className="text-blue-500" />
                 </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="hover:bg-blue-100 p-1 rounded"
-                      onClick={e => { e.preventDefault(); setDeleteRecipient(r); }}
-                    >
-                      <FaTrash className="text-blue-500" />
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete Recipient</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action cannot be undone. Are you sure you want to delete this recipient?
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={async () => {
-                          try {
-                            await databases.deleteDocument(dbId, collectionId, r.$id);
-                            setRecipients(recipients.filter((rec) => rec.$id !== r.$id));
-                            setDeleteRecipient(null);
-                          } catch (e) {
-                            alert("Failed to delete recipient.");
-                          }
-                        }}
-                      >
-                        Delete
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="hover:bg-blue-100 p-1 rounded"
+                  onClick={e => { e.preventDefault(); setDeleteRecipient(r); }}
+                >
+                  <FaTrash className="text-blue-500" />
+                </Button>
               </div>
               <div><b>Name:</b> {r.recipient_name}</div>
               <div><b>Relationship:</b> {r.recipient_relationship}</div>
@@ -184,6 +187,27 @@ export default function MessagePage() {
           </Link>
         ))}
       </div>
+      {/* Single AlertDialog for delete confirmation */}
+      <AlertDialog open={!!deleteRecipient} onOpenChange={open => { if (!open) setDeleteRecipient(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Recipient</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. Are you sure you want to delete this recipient? <b>This will delete all messages, events, and assistants for this recipient.</b>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteRecipient(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (deleteRecipient) await handleCascadeDelete(deleteRecipient);
+              }}
+            >
+              Delete Everything
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

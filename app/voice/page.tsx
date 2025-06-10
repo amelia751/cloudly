@@ -30,6 +30,7 @@ export default function VoicePage() {
   const [loading, setLoading] = useState(false);
   const [createdVoice, setCreatedVoice] = useState<any>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
   const [voices, setVoices] = useState<any[]>([]);
   const [voicesLoading, setVoicesLoading] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -118,7 +119,19 @@ export default function VoicePage() {
     e.preventDefault();
     setCreatedVoice(null);
     setSaveError(null);
-    if (!name || !audioBlob) return;
+    setFormError(null);
+    if (!name && !audioBlob) {
+      setFormError('Please enter a voice name and record your voice.');
+      return;
+    }
+    if (!name) {
+      setFormError('Please enter a voice name.');
+      return;
+    }
+    if (!audioBlob) {
+      setFormError('Please record your voice.');
+      return;
+    }
     setLoading(true);
 
     const form = new FormData();
@@ -206,6 +219,9 @@ export default function VoicePage() {
       {voices.length === 0 ? (
         <>
           {voicePrompt}
+          {formError && (
+            <div className="bg-red-100 text-red-700 rounded px-3 py-2 mb-2">{formError}</div>
+          )}
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 mb-8">
             <Input
               type="text"
@@ -238,7 +254,7 @@ export default function VoicePage() {
                 <>
                   <audio controls src={URL.createObjectURL(audioBlob)} className="ml-4" />
                   <Button type="button" onClick={() => setAudioBlob(null)} variant="outline" className="ml-2" aria-label="Retry">
-                    <img src="/reload.png" alt="Retry" className="w-5 h-5" />
+                    <img src="/retry.png" alt="Retry" className="w-5 h-5" />
                   </Button>
                 </>
               )}
