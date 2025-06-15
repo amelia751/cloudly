@@ -1,18 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
-  try {
-    const { id } = params;
-    if (!id) {
-      return NextResponse.json({ error: "Missing assistant id" }, { status: 400 });
-    }
+const elevenLabsApiKey = process.env.ELEVEN_LABS_API_KEY!;
+const vapiApiKey = process.env.VAPI_API_KEY!;
 
+export async function PATCH(request: NextRequest) {
+  // Get the id from the URL pathname
+  const url = new URL(request.url);
+  const id = url.pathname.split("/").pop();
+
+  if (!id) {
+    return NextResponse.json({ error: "Missing assistant id" }, { status: 400 });
+  }
+
+  try {
     const { assistantName, promptWithContext, firstMessage, voiceId } = await request.json();
+
+    if (!voiceId) {
+      return NextResponse.json({ error: "Missing ElevenLabs voiceId" }, { status: 400 });
+    }
 
     const payload: any = {
       name: assistantName,
       model: {
-        model: "gpt-4o", // <-- Use allowed model name!
+        model: "gpt-4o",
         messages: [
           {
             role: "system",
@@ -24,10 +34,10 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       voice: {
         provider: "custom-voice",
         server: {
-          url: "https://waves-api.smallest.ai/api/v1/tts",
+          url: `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
           headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${process.env.SMALLEST_AI_API_KEY || process.env.SMALLESTAI_API_KEY}`,
+            "xi-api-key": elevenLabsApiKey,
+            "Content-Type": "application/json"
           },
           timeoutSeconds: 30
         },
@@ -40,7 +50,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     const vapiRes = await fetch(`https://api.vapi.ai/assistant/${id}`, {
       method: "PATCH",
       headers: {
-        Authorization: `Bearer ${process.env.VAPI_API_KEY}`,
+        Authorization: `Bearer ${vapiApiKey}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify(payload),
@@ -49,9 +59,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     let vapiData = {};
     try {
       vapiData = await vapiRes.json();
-    } catch {
-      // No body, error
-    }
+    } catch {}
 
     if (!vapiRes.ok) {
       return NextResponse.json({

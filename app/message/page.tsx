@@ -136,39 +136,39 @@ export default function MessagePage() {
       <div className="flex items-center mb-6">
         <AddRecipientDialog onAdded={fetchRecipients} />
         <h2 className="text-xl font-bold ml-4">Your Connections</h2>
-      </div>
+              </div>
       <div className="w-full space-y-3">
         {recipients.map((r) => (
           <Link key={r.$id} href={`/message/${r.$id}`} className="block">
             <div className="bg-white border rounded p-4 flex flex-col relative hover:shadow-md transition cursor-pointer">
               {/* Top right: Edit / Delete */}
               <div className="absolute top-2 right-2 flex gap-2 z-10">
-                <Button
+                    <Button
                   size="icon"
-                  variant="ghost"
+                      variant="ghost"
                   className="hover:bg-blue-100 p-1 rounded"
                   onClick={e => { e.preventDefault(); setEditRecipient(r); }}
-                >
+                    >
                   <FaEdit className="text-blue-500" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
+                    </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
                   className="hover:bg-blue-100 p-1 rounded"
                   onClick={e => { e.preventDefault(); setDeleteRecipient(r); }}
-                >
+                  >
                   <FaTrash className="text-blue-500" />
-                </Button>
-              </div>
+                  </Button>
+                </div>
               <div><b>Name:</b> {r.recipient_name}</div>
               <div><b>Relationship:</b> {r.recipient_relationship}</div>
               <div><b>Email:</b> {r.recipient_email}</div>
               <div>
                 <b>Birthday:</b>{" "}
-                {r.recipient_birthday
-                  ? new Date(r.recipient_birthday).toLocaleDateString()
-                  : <span className="text-gray-400">N/A</span>}
-              </div>
+                      {r.recipient_birthday
+                        ? new Date(r.recipient_birthday).toLocaleDateString()
+                        : <span className="text-gray-400">N/A</span>}
+                    </div>
               {/* Edit dialog */}
               {editRecipient && editRecipient.$id === r.$id && (
                 <UpdateRecipientDialog
@@ -182,8 +182,8 @@ export default function MessagePage() {
                     fetchRecipients();
                   }}
                 />
-              )}
-            </div>
+          )}
+        </div>
           </Link>
         ))}
       </div>

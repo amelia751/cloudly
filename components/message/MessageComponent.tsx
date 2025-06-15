@@ -58,7 +58,6 @@ export default function MessageComponent({ id }: { id: string }) {
   useEffect(() => {
     fetchMessages();
     fetchRecipientName();
-    // eslint-disable-next-line
   }, [id]);
 
   return (

@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 
 const VAPI_API_KEY = process.env.VAPI_API_KEY!;
-const SMALLEST_API_KEY = process.env.SMALLEST_API_KEY!;
+const ELEVEN_LABS_API_KEY = process.env.ELEVEN_LABS_API_KEY!;
 
 export async function POST(req: NextRequest) {
   try {
     const { voiceId, assistantName, content, firstMessage, knowledge, directoryID } = await req.json();
 
-    // Prepare context for knowledge base, e.g., as string for prompt (customize as you wish)
+    // Prepare context for knowledge base
     let contextPrompt = "";
     if (knowledge) {
       if (knowledge.messages?.length) {
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
       content: content + "\n" + contextPrompt,
     };
 
-    // Use Vapi custom-voice provider as per docs!
+    // Use Vapi custom-voice provider with ElevenLabs TTS
     const payload = {
       name: assistantName,
       firstMessage,
@@ -38,10 +38,10 @@ export async function POST(req: NextRequest) {
       voice: {
         provider: "custom-voice",
         server: {
-          url: "https://waves-api.smallest.ai/api/v1/tts",
+          url: `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${SMALLEST_API_KEY}`,
+            "xi-api-key": ELEVEN_LABS_API_KEY,
           },
           timeoutSeconds: 30,
         },

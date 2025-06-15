@@ -20,7 +20,7 @@ const assistantCollectionId = process.env.NEXT_PUBLIC_ASSISTANT_COLLECTION_ID!;
 
 export default function MessageDetailPage() {
   const params = useParams();
-  const { id } = params;
+  const id = params?.id as string;
   const [tab, setTab] = useState("messages");
   const [recipientName, setRecipientName] = useState<string>("");
   const [assistant, setAssistant] = useState<any>(null);

@@ -28,7 +28,7 @@ export default function VoicePage() {
   const [recorder, setRecorder] = useState<any>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [createdVoice, setCreatedVoice] = useState<any>(null);
+  const [createdVoice, setCreatedVoice] = useState<any>(null); // This will show returned object
   const [saveError, setSaveError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [voices, setVoices] = useState<any[]>([]);
@@ -41,7 +41,7 @@ export default function VoicePage() {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const rec = new Recorder(audioContext, { type: 'audio/wav' });
+      const rec = new Recorder(audioContext);
       rec.init(stream);
       setRecorder(rec);
     };
@@ -143,21 +143,21 @@ export default function VoicePage() {
     const data = await res.json();
     setLoading(false);
 
-    if (res.ok && data?.data?.voiceId) {
-      setCreatedVoice(data);
+    setCreatedVoice(data); 
+
+    // --- Use ElevenLabs "voice_id" as Appwrite voiceId ---
+    const voiceId = data.voice_id;
+
+    if (res.ok && voiceId) {
       try {
-        await saveVoiceToAppwrite({
-          name,
-          meta,
-          voiceId: data.data.voiceId,
-        });
+        await saveVoiceToAppwrite({ name, meta, voiceId });
         await fetchUserVoices();
+        setName('');
+        setMeta('');
+        setAudioBlob(null);
       } catch (err: any) {
         setSaveError('Appwrite save failed: ' + (err?.message || err));
       }
-      setName('');
-      setMeta('');
-      setAudioBlob(null);
     } else {
       setCreatedVoice({ error: data.error || 'Voice cloning failed', ...data });
     }
@@ -167,7 +167,6 @@ export default function VoicePage() {
     setLoading(true);
     setSaveError(null);
 
-    // 1. Delete from Smallest AI
     const res = await fetch('/api/voice', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
@@ -175,7 +174,7 @@ export default function VoicePage() {
     });
     const result = await res.json();
 
-    // 2. If successful, delete from Appwrite
+    // If successful, delete from Appwrite
     if (res.ok && result.success) {
       try {
         await databases.deleteDocument(dbId, collectionId, docId);
@@ -184,7 +183,7 @@ export default function VoicePage() {
         setSaveError('Appwrite delete failed: ' + (err?.message || err));
       }
     } else {
-      setSaveError('Delete from Smallest AI failed: ' + (result.error || 'Unknown error'));
+      setSaveError('Delete from ElevenLabs failed: ' + (result.error || 'Unknown error'));
     }
     setLoading(false);
   };

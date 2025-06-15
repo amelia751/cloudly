@@ -122,14 +122,13 @@ const Sidebar = () => {
       <div className="flex flex-col justify-between h-full bg-gradient-to-b from-sky-400 to-sky-600 rounded-3xl">
         <div>
           <div className="p-4 flex items-center justify-between">
-            <h2 className={cn("text-2xl font-bold text-white", !isPinned && !isHovered && "hidden")}>Readily</h2>
+            <h2 className={cn("text-2xl font-bold text-white", !isPinned && !isHovered && "hidden")}>Cloudly</h2>
             <button onClick={() => setIsPinned(!isPinned)} className="text-white">
               {isPinned ? <PanelLeftClose className="h-6 w-6" /> : <PanelLeftOpen className="h-6 w-6" />}
             </button>
           </div>
-
           <nav className="mt-4 flex flex-col justify-center">
-            <DocsSidebarNavItems items={navItems} pathname={pathname} isPinned={isPinned || isHovered} />
+            <DocsSidebarNavItems items={navItems} pathname={pathname || ''} isPinned={isPinned || isHovered} />
           </nav>
         </div>
 

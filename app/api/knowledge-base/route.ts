@@ -10,7 +10,7 @@ export async function PATCH(req: NextRequest) {
     if (!VAPI_SECRET_KEY) {
       return NextResponse.json({ error: "Missing VAPI_SECRET_KEY in env" }, { status: 500 });
     }
-    // Patch only the system prompt, but include required provider/model fields
+    // Patch only the system prompt
     const payload = {
       model: {
         provider: "openai",

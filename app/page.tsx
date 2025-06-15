@@ -1,109 +1,112 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
+
+const steps = [
+  {
+    title: "Record Your Voice",
+    description: (
+      <>
+        <span className="font-bold text-blue-400">Step 1:</span> In Cloudly, your journey begins with your voice. Record a message for your loved one—let your words float gently above the clouds, ready to be heard from afar.<br />
+        <span className="text-blue-500">Your voice is a bridge between worlds.</span>
+      </>
+    ),
+    button: { href: "/voice", label: "Record Voice" },
+    cloudClass: "animate-float-slow",
+  },
+  {
+    title: "Add Recipient & Message",
+    description: (
+      <>
+        <span className="font-bold text-blue-400">Step 2:</span> Tell us who this message is for. Add your recipient's info and write a message from the heart. Don't worry, you can always add more later.<br />
+        <span className="text-blue-500">Every word is a memory, every name a connection.</span>
+      </>
+    ),
+    button: { href: "/message", label: "Add Recipient & Message" },
+    cloudClass: "animate-float-medium",
+  },
+  {
+    title: "Publish & Invite",
+    description: (
+      <>
+        <span className="font-bold text-blue-400">Step 3:</span> Publish your message to the cloudly land. Your recipient will receive a gentle invitation to listen and connect.<br />
+        <span className="text-blue-500">An invitation is a whisper from the clouds.</span>
+      </>
+    ),
+    button: { href: "/invite", label: "Send Invitation" },
+    cloudClass: "animate-float-fast",
+  },
+  {
+    title: "Connect in Cloudly Land",
+    description: (
+      <>
+        <span className="font-bold text-blue-400">Step 4:</span> Now, your loved one can join you in a call, sharing voices and memories across the cloudly sky.<br />
+        <span className="text-blue-500">In Cloudly, distance fades and hearts draw near.</span>
+      </>
+    ),
+    button: { href: "/contact", label: "Start a Call" },
+    cloudClass: "animate-float-slow",
+  },
+];
 
 export default function Home() {
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      <div className="flex-1 grid grid-rows-[20px_1fr_20px] items-center justify-items-center p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+      <div className="flex-1 overflow-y-auto h-screen snap-y snap-mandatory">
+        {steps.map((step, idx) => (
+          <section
+            key={idx}
+            className="relative flex flex-col items-center justify-center min-h-screen snap-start bg-gradient-to-b from-sky-100 via-white to-blue-200 overflow-hidden"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            {/* Floating Clouds */}
+            <div className="absolute top-0 left-0 w-full h-full pointer-events-none select-none">
+              <svg className={`absolute left-10 top-10 opacity-60 ${step.cloudClass}`} width="120" height="60" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="40" cy="30" rx="40" ry="20" fill="#fff"/>
+                <ellipse cx="80" cy="30" rx="30" ry="15" fill="#e0f2fe"/>
+              </svg>
+              <svg className={`absolute right-20 top-32 opacity-40 ${step.cloudClass}`} width="100" height="50" viewBox="0 0 100 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="30" cy="25" rx="30" ry="15" fill="#fff"/>
+                <ellipse cx="70" cy="25" rx="20" ry="10" fill="#bae6fd"/>
+              </svg>
+              <svg className={`absolute left-1/2 bottom-10 opacity-50 ${step.cloudClass}`} style={{transform: 'translateX(-50%)'}} width="140" height="70" viewBox="0 0 140 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="60" cy="35" rx="60" ry="25" fill="#fff"/>
+                <ellipse cx="110" cy="35" rx="30" ry="15" fill="#e0f2fe"/>
+              </svg>
+            </div>
+            {/* Main Content */}
+            <div className="relative z-10 flex flex-col items-center bg-white/80 rounded-3xl shadow-2xl px-8 py-12 mt-10 max-w-xl w-full backdrop-blur-md border border-blue-100">
+              <h1 className="text-4xl sm:text-5xl font-extrabold text-blue-500 mb-4 drop-shadow-lg text-center">{step.title}</h1>
+              <p className="text-lg text-blue-900 mb-8 text-center font-medium">{step.description}</p>
+              <Link href={step.button.href} className="inline-block">
+                <button className="rounded-full px-8 py-3 bg-gradient-to-r from-blue-400 to-sky-300 text-white text-lg font-semibold shadow-lg hover:from-blue-500 hover:to-sky-400 transition-all duration-200">
+                  {step.button.label}
+                </button>
+              </Link>
+            </div>
+            {/* Cloud float animations */}
+            <style jsx>{`
+              @keyframes float-slow {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-20px); }
+              }
+              @keyframes float-medium {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-30px); }
+              }
+              @keyframes float-fast {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-40px); }
+              }
+              .animate-float-slow { animation: float-slow 8s ease-in-out infinite; }
+              .animate-float-medium { animation: float-medium 6s ease-in-out infinite; }
+              .animate-float-fast { animation: float-fast 4s ease-in-out infinite; }
+            `}</style>
+          </section>
+        ))}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-      </div>
     </div>
   );
 }
